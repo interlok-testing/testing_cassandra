@@ -1,0 +1,516 @@
+<adapter>
+  <unique-id>cassandra</unique-id>
+  <start-up-event-imp>com.adaptris.core.event.StandardAdapterStartUpEvent</start-up-event-imp>
+  <heartbeat-event-imp>com.adaptris.core.HeartbeatEvent</heartbeat-event-imp>
+  <shared-components>
+    <connections>
+      <cassandra-connection>
+        <unique-id>cassandra-connection</unique-id>
+        <connection-url>${host}</connection-url>
+        <keyspace>${keyspace}</keyspace>
+      </cassandra-connection>
+      <jetty-embedded-connection>
+        <unique-id>Embedded Jetty Connection</unique-id>
+      </jetty-embedded-connection>
+    </connections>
+    <services>
+      <json-transform-service>
+        <unique-id>remove-password-from-payload</unique-id>
+        <source-json class="string-payload-data-input-parameter"/>
+        <mapping-spec class="constant-data-input-parameter">
+          <value>[  {    "operation": "remove",    "spec": {   "*": {   "password": ""    }   }  }]</value>
+        </mapping-spec>
+        <target-json class="string-payload-data-output-parameter"/>
+        <metadata-filter class="remove-all-metadata-filter"/>
+      </json-transform-service>
+      <json-schema-service>
+        <unique-id>validate-json</unique-id>
+        <schema-url class="constant-data-input-parameter">
+          <value>{   "$id":"json-schema",   "$schema":"http://json-schema.org/draft-07/schema#",   "title":"Account",   "type":"object",   "properties":{      "firstName":{         "type":"string",         "description":"The person's first name."      },      "lastName":{         "type":"string",         "description":"The person's last name."      },      "username":{         "type":"string",         "description":"The person's username"      },      "password":{         "type":"string",         "description":"The person's password"      }   },   "required": ["firstName", "lastName", "username", "password"]}</value>
+        </schema-url>
+        <on-validation-exception class="json-schema-validation-exception-into-message">
+          <throw-exception>false</throw-exception>
+        </on-validation-exception>
+        <json-schema-loader class="default-json-schema-loader"/>
+      </json-schema-service>
+    </services>
+  </shared-components>
+  <event-handler class="default-event-handler">
+    <unique-id>DefaultEventHandler</unique-id>
+    <connection class="null-connection">
+      <unique-id>sleepy-fermat</unique-id>
+    </connection>
+    <producer class="null-message-producer">
+      <unique-id>naughty-pike</unique-id>
+    </producer>
+  </event-handler>
+  <message-error-handler class="null-processing-exception-handler">
+    <unique-id>reverent-cray</unique-id>
+  </message-error-handler>
+  <failed-message-retrier class="no-retries">
+    <unique-id>clever-einstein</unique-id>
+  </failed-message-retrier>
+  <channel-list>
+    <channel>
+      <consume-connection class="null-connection">
+        <unique-id>boring-roentgen</unique-id>
+      </consume-connection>
+      <produce-connection class="null-connection">
+        <unique-id>backstabbing-noether</unique-id>
+      </produce-connection>
+      <workflow-list>
+        <standard-workflow>
+          <consumer class="polling-trigger">
+            <unique-id>one-time-poller</unique-id>
+            <poller class="fixed-interval-poller">
+              <poll-interval>
+                <unit>DAYS</unit>
+                <interval>999999</interval>
+              </poll-interval>
+            </poller>
+          </consumer>
+          <service-collection class="service-list">
+            <unique-id>prickly-pike</unique-id>
+            <services>
+              <cassandra-execute-service>
+                <unique-id>init-cassandra-table</unique-id>
+                <connection class="shared-connection">
+                  <lookup-name>cassandra-connection</lookup-name>
+                </connection>
+                <statement class="constant-data-input-parameter">
+                  <value>create table if not exists accounts(username text, first_name text, last_name text, password text, PRIMARY KEY(username));</value>
+                </statement>
+                <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                <parameter-list>
+                  <parameters/>
+                </parameter-list>
+                <statement-primer class="null-statement-primer"/>
+              </cassandra-execute-service>
+            </services>
+          </service-collection>
+          <producer class="null-message-producer">
+            <unique-id>sleepy-fermi</unique-id>
+          </producer>
+          <produce-exception-handler class="null-produce-exception-handler"/>
+          <unique-id>init-cassandra</unique-id>
+          <message-metrics-interceptor>
+            <unique-id>insert-into-cassandra-MessageMetrics</unique-id>
+            <timeslice-duration>
+              <unit>MINUTES</unit>
+              <interval>5</interval>
+            </timeslice-duration>
+            <timeslice-history-count>12</timeslice-history-count>
+          </message-metrics-interceptor>
+          <in-flight-workflow-interceptor>
+            <unique-id>insert-into-cassandra-InFlight</unique-id>
+          </in-flight-workflow-interceptor>
+        </standard-workflow>
+      </workflow-list>
+      <unique-id>init-cassandra</unique-id>
+      <comments>Init the cassamdra accounts table if it doesn't exist.</comments>
+    </channel>
+    <channel>
+      <consume-connection class="shared-connection">
+        <lookup-name>Embedded Jetty Connection</lookup-name>
+      </consume-connection>
+      <produce-connection class="null-connection">
+        <unique-id>grave-sammet</unique-id>
+      </produce-connection>
+      <workflow-list>
+        <standard-workflow>
+          <consumer class="jetty-message-consumer">
+            <unique-id>api-cassandra</unique-id>
+            <path>${apiPath}/*</path>
+            <parameter-handler class="jetty-http-parameters-as-metadata"/>
+            <header-handler class="jetty-http-ignore-headers"/>
+          </consumer>
+          <service-collection class="service-list">
+            <unique-id>sleepy-panini</unique-id>
+            <services>
+              <branching-service-collection>
+                <unique-id>HTTP Router</unique-id>
+                <services>
+                  <jetty-routing-service>
+                    <unique-id>Route</unique-id>
+                    <route>
+                      <service-id>openapi</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}/openapi.yml$</url-pattern>
+                        <method>GET</method>
+                      </condition>
+                    </route>
+                    <route>
+                      <service-id>add</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}$</url-pattern>
+                        <method>POST</method>
+                      </condition>
+                    </route>
+                    <route>
+                      <service-id>delete</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}/(.+)$</url-pattern>
+                        <method>DELETE</method>
+                        <metadata-key>username</metadata-key>
+                      </condition>
+                    </route>
+                    <route>
+                      <service-id>list</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}$</url-pattern>
+                        <method>GET</method>
+                      </condition>
+                    </route>
+                    <route>
+                      <service-id>get</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}/(.+)$</url-pattern>
+                        <method>GET</method>
+                        <metadata-key>username</metadata-key>
+                      </condition>
+                    </route>
+                    <route>
+                      <service-id>update</service-id>
+                      <condition>
+                        <url-pattern>${cassandraPath}$</url-pattern>
+                        <method>PUT</method>
+                      </condition>
+                    </route>
+                    <default-service-id>not-handled</default-service-id>
+                  </jetty-routing-service>
+                  <read-file-service>
+                    <unique-id>openapi</unique-id>
+                    <file-path>file://localhost/./config/openapi.yml</file-path>
+                    <content-type-metadata-key>application/yml</content-type-metadata-key>
+                  </read-file-service>
+                  <service-list>
+                    <unique-id>add</unique-id>
+                    <services>
+                      <shared-service>
+                        <unique-id>validate-json</unique-id>
+                        <lookup-name>validate-json</lookup-name>
+                      </shared-service>
+                      <json-to-metadata>
+                        <unique-id>small-wright</unique-id>
+                      </json-to-metadata>
+                      <if-then-otherwise>
+                        <unique-id>is-valid</unique-id>
+                        <condition class="metadata">
+                          <operator class="is-empty"/>
+                          <metadata-key>schema-violations</metadata-key>
+                        </condition>
+                        <then>
+                          <service class="service-list">
+                            <unique-id>valid</unique-id>
+                            <services>
+                              <cassandra-execute-service>
+                                <unique-id>add</unique-id>
+                                <connection class="shared-connection">
+                                  <lookup-name>cassandra-connection</lookup-name>
+                                </connection>
+                                <statement class="constant-data-input-parameter">
+                                  <value>insert into accounts(username, first_name, last_name, password)values ('%message{username}', '%message{firstName}', '%message{lastName}', '%message{password}');</value>
+                                </statement>
+                                <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                                <parameter-list>
+                                  <parameters/>
+                                </parameter-list>
+                                <statement-primer class="null-statement-primer"/>
+                              </cassandra-execute-service>
+                              <payload-from-template>
+                                <unique-id>empty-payload</unique-id>
+                                <metadata-tokens/>
+                                <template>{}</template>
+                              </payload-from-template>
+                              <cassandra-query-service>
+                                <unique-id>get</unique-id>
+                                <connection class="shared-connection">
+                                  <lookup-name>cassandra-connection</lookup-name>
+                                </connection>
+                                <statement class="constant-data-input-parameter">
+                                  <value>select * from accounts where username = '%message{username}';</value>
+                                </statement>
+                                <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                                <parameter-list>
+                                  <parameters/>
+                                </parameter-list>
+                                <statement-primer class="null-statement-primer"/>
+                                <result-set-translator class="jdbc-json-first-resultset-output">
+                                  <column-name-style>NoStyle</column-name-style>
+                                </result-set-translator>
+                              </cassandra-query-service>
+                              <shared-service>
+                                <unique-id>remove-password-from-payload</unique-id>
+                                <lookup-name>remove-password-from-payload</lookup-name>
+                              </shared-service>
+                            </services>
+                          </service>
+                        </then>
+                        <otherwise>
+                          <service class="service-list">
+                            <unique-id>invalid</unique-id>
+                            <services>
+                              <add-metadata-service>
+                                <unique-id>Add 400 Response Code</unique-id>
+                                <metadata-element>
+                                  <key>ResponseCode</key>
+                                  <value>400</value>
+                                </metadata-element>
+                              </add-metadata-service>
+                              <payload-from-template>
+                                <unique-id>Add Not Handled Status Message</unique-id>
+                                <metadata-tokens/>
+                                <template>{"Status" : "Invalid input"}</template>
+                              </payload-from-template>
+                            </services>
+                          </service>
+                        </otherwise>
+                      </if-then-otherwise>
+                    </services>
+                  </service-list>
+                  <service-list>
+                    <unique-id>delete</unique-id>
+                    <services>
+                      <cassandra-query-service>
+                        <unique-id>get</unique-id>
+                        <connection class="shared-connection">
+                          <lookup-name>cassandra-connection</lookup-name>
+                        </connection>
+                        <statement class="constant-data-input-parameter">
+                          <value>select * from accounts where username = '%message{username}';</value>
+                        </statement>
+                        <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                        <parameter-list>
+                          <parameters/>
+                        </parameter-list>
+                        <statement-primer class="null-statement-primer"/>
+                        <result-set-translator class="jdbc-json-first-resultset-output">
+                          <column-name-style>NoStyle</column-name-style>
+                        </result-set-translator>
+                      </cassandra-query-service>
+                      <cassandra-execute-service>
+                        <unique-id>delete</unique-id>
+                        <connection class="shared-connection">
+                          <lookup-name>cassandra-connection</lookup-name>
+                        </connection>
+                        <statement class="constant-data-input-parameter">
+                          <value>delete from accounts where username = '%message{username}';</value>
+                        </statement>
+                        <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                        <parameter-list>
+                          <parameters/>
+                        </parameter-list>
+                        <statement-primer class="null-statement-primer"/>
+                      </cassandra-execute-service>
+                      <shared-service>
+                        <unique-id>remove-password-from-payload</unique-id>
+                        <lookup-name>remove-password-from-payload</lookup-name>
+                      </shared-service>
+                    </services>
+                  </service-list>
+                  <service-list>
+                    <unique-id>list</unique-id>
+                    <services>
+                      <cassandra-query-service>
+                        <unique-id>list-all</unique-id>
+                        <connection class="shared-connection">
+                          <lookup-name>cassandra-connection</lookup-name>
+                        </connection>
+                        <statement class="constant-data-input-parameter">
+                          <value>select * from accounts;</value>
+                        </statement>
+                        <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                        <parameter-list>
+                          <parameters/>
+                        </parameter-list>
+                        <statement-primer class="null-statement-primer"/>
+                        <result-set-translator class="jdbc-json-first-resultset-output">
+                          <column-name-style>NoStyle</column-name-style>
+                        </result-set-translator>
+                      </cassandra-query-service>
+                      <shared-service>
+                        <unique-id>remove-password-from-payload</unique-id>
+                        <lookup-name>remove-password-from-payload</lookup-name>
+                      </shared-service>
+                    </services>
+                  </service-list>
+                  <service-list>
+                    <unique-id>get</unique-id>
+                    <services>
+                      <payload-from-template>
+                        <unique-id>happy-aryabhata</unique-id>
+                        <metadata-tokens/>
+                        <template>{}</template>
+                      </payload-from-template>
+                      <cassandra-query-service>
+                        <unique-id>get</unique-id>
+                        <connection class="shared-connection">
+                          <lookup-name>cassandra-connection</lookup-name>
+                        </connection>
+                        <statement class="constant-data-input-parameter">
+                          <value>select * from accounts where username = '%message{username}';</value>
+                        </statement>
+                        <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                        <parameter-list>
+                          <parameters/>
+                        </parameter-list>
+                        <statement-primer class="null-statement-primer"/>
+                        <result-set-translator class="jdbc-json-first-resultset-output">
+                          <column-name-style>NoStyle</column-name-style>
+                        </result-set-translator>
+                      </cassandra-query-service>
+                      <shared-service>
+                        <unique-id>remove-password-from-payload</unique-id>
+                        <lookup-name>remove-password-from-payload</lookup-name>
+                      </shared-service>
+                    </services>
+                  </service-list>
+                  <service-list>
+                    <unique-id>update</unique-id>
+                    <services>
+                      <shared-service>
+                        <unique-id>validate-json</unique-id>
+                        <lookup-name>validate-json</lookup-name>
+                      </shared-service>
+                      <json-to-metadata>
+                        <unique-id>small-wright</unique-id>
+                      </json-to-metadata>
+                      <if-then-otherwise>
+                        <unique-id>is-valid</unique-id>
+                        <condition class="metadata">
+                          <operator class="is-empty"/>
+                          <metadata-key>schema-violations</metadata-key>
+                        </condition>
+                        <then>
+                          <service class="service-list">
+                            <unique-id>valid</unique-id>
+                            <services>
+                              <cassandra-execute-service>
+                                <unique-id>update</unique-id>
+                                <connection class="shared-connection">
+                                  <lookup-name>cassandra-connection</lookup-name>
+                                </connection>
+                                <statement class="constant-data-input-parameter">
+                                  <value>update accounts set first_name = '%message{firstName}', last_name = '%message{lastName}', password = '%message{password}' WHERE username = '%message{username}' IF EXISTS;</value>
+                                </statement>
+                                <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                                <parameter-list>
+                                  <parameters/>
+                                </parameter-list>
+                                <statement-primer class="null-statement-primer"/>
+                              </cassandra-execute-service>
+                              <payload-from-template>
+                                <unique-id>empty-payload</unique-id>
+                                <metadata-tokens/>
+                                <template>{}</template>
+                              </payload-from-template>
+                              <cassandra-query-service>
+                                <unique-id>get</unique-id>
+                                <connection class="shared-connection">
+                                  <lookup-name>cassandra-connection</lookup-name>
+                                </connection>
+                                <statement class="constant-data-input-parameter">
+                                  <value>select * from accounts where username == '%message{username}';</value>
+                                </statement>
+                                <parameter-applicator class="cassandra-null-parameter-applicator"/>
+                                <parameter-list>
+                                  <parameters/>
+                                </parameter-list>
+                                <statement-primer class="null-statement-primer"/>
+                                <result-set-translator class="jdbc-json-first-resultset-output">
+                                  <column-name-style>NoStyle</column-name-style>
+                                </result-set-translator>
+                              </cassandra-query-service>
+                              <shared-service>
+                                <unique-id>remove-password-from-payload</unique-id>
+                                <lookup-name>remove-password-from-payload</lookup-name>
+                              </shared-service>
+                            </services>
+                          </service>
+                        </then>
+                        <otherwise>
+                          <service class="service-list">
+                            <unique-id>invalid</unique-id>
+                            <services>
+                              <add-metadata-service>
+                                <unique-id>Add 400 Response Code</unique-id>
+                                <metadata-element>
+                                  <key>ResponseCode</key>
+                                  <value>400</value>
+                                </metadata-element>
+                              </add-metadata-service>
+                              <payload-from-template>
+                                <unique-id>Add Not Handled Status Message</unique-id>
+                                <metadata-tokens/>
+                                <template>{"Status" : "Invalid input"}</template>
+                              </payload-from-template>
+                            </services>
+                          </service>
+                        </otherwise>
+                      </if-then-otherwise>
+                    </services>
+                  </service-list>
+                  <service-list>
+                    <unique-id>not-handled</unique-id>
+                    <services>
+                      <add-metadata-service>
+                        <unique-id>Add 400 Response Code</unique-id>
+                        <metadata-element>
+                          <key>ResponseCode</key>
+                          <value>400</value>
+                        </metadata-element>
+                      </add-metadata-service>
+                      <payload-from-template>
+                        <unique-id>Add Not Handled Status Message</unique-id>
+                        <metadata-tokens/>
+                        <template>{"Status" : "Not Handled; please check"}</template>
+                      </payload-from-template>
+                    </services>
+                  </service-list>
+                </services>
+                <first-service-id>Route</first-service-id>
+              </branching-service-collection>
+              <standalone-producer>
+                <unique-id>SendResponse</unique-id>
+                <connection class="null-connection">
+                  <unique-id>evil-stallman</unique-id>
+                </connection>
+                <producer class="jetty-standard-response-producer">
+                  <unique-id>ResponseProducer</unique-id>
+                  <status-provider class="http-metadata-status">
+                    <code-key>ResponseCode</code-key>
+                    <default-status>OK_200</default-status>
+                  </status-provider>
+                  <response-header-provider class="jetty-no-response-headers"/>
+                  <content-type-provider class="http-null-content-type-provider"/>
+                  <send-payload>true</send-payload>
+                </producer>
+              </standalone-producer>
+            </services>
+          </service-collection>
+          <producer class="null-message-producer">
+            <unique-id>thirsty-ramanujan</unique-id>
+          </producer>
+          <produce-exception-handler class="null-produce-exception-handler"/>
+          <unique-id>cassandra-api</unique-id>
+          <message-metrics-interceptor>
+            <unique-id>cassandra-api-MessageMetrics</unique-id>
+            <timeslice-duration>
+              <unit>MINUTES</unit>
+              <interval>5</interval>
+            </timeslice-duration>
+            <timeslice-history-count>12</timeslice-history-count>
+          </message-metrics-interceptor>
+          <in-flight-workflow-interceptor>
+            <unique-id>cassandra-api-InFlight</unique-id>
+          </in-flight-workflow-interceptor>
+        </standard-workflow>
+      </workflow-list>
+      <unique-id>cassandra-api</unique-id>
+    </channel>
+  </channel-list>
+  <message-error-digester class="standard-message-error-digester">
+    <unique-id>ErrorDigest</unique-id>
+    <digest-max-size>100</digest-max-size>
+  </message-error-digester>
+</adapter>

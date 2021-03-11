@@ -1,0 +1,84 @@
+<service-test>
+  <unique-id>boring-keller</unique-id>
+  <test-client class="embedded-jmx-test-client"/>
+  <helpers/>
+  <test-list>
+    <unique-id>cassandra-api</unique-id>
+    <test>
+      <unique-id>remove-password-from-payload</unique-id>
+      <test-case>
+        <unique-id>remove-password-from-payload</unique-id>
+        <input-message-provider>
+          <metadata-provider class="empty-metadata-provider"/>
+          <payload-provider class="inline-payload-provider">
+            <payload><![CDATA[[{
+  "username":"username",
+  "firstName":"firstName",
+  "lastName":"lastName",
+  "password":"password"
+}]]]></payload>
+          </payload-provider>
+        </input-message-provider>
+        <assertions>
+          <assert-payload-equals>
+            <payload><![CDATA[[{"username":"username","firstName":"firstName","lastName":"lastName"}]]]></payload>
+          </assert-payload-equals>
+        </assertions>
+      </test-case>
+      <service-to-test>
+        <source class="default-config-file-source">
+          <file>file:///${service.tester.working.directory}/src/main/interlok/config/adapter.xml</file>
+        </source>
+        <preprocessors>
+          <service-unique-id-preprocessor>
+            <service>remove-password-from-payload</service>
+          </service-unique-id-preprocessor>
+        </preprocessors>
+      </service-to-test>
+    </test>
+    <test>
+      <unique-id>validate-json</unique-id>
+      <test-case>
+        <unique-id>assert-validate-json-success</unique-id>
+        <input-message-provider>
+          <metadata-provider class="empty-metadata-provider"/>
+          <payload-provider class="inline-payload-provider">
+            <payload><![CDATA[{
+  "username":"username",
+  "firstName":"firstName",
+  "lastName":"lastName",
+  "password":"password"
+}]]></payload>
+          </payload-provider>
+        </input-message-provider>
+        <assertions/>
+      </test-case>
+      <test-case>
+        <unique-id>assert-validate-json-fails</unique-id>
+        <input-message-provider>
+          <metadata-provider class="empty-metadata-provider"/>
+          <payload-provider class="inline-payload-provider">
+            <payload><![CDATA[{
+  "invalidField":"invalidField"
+}]]></payload>
+          </payload-provider>
+        </input-message-provider>
+        <assertions>
+          <assert-payload-contains>
+            <payload><![CDATA["original":{"invalidField":"invalidField"},"schema-violations"]]></payload>
+          </assert-payload-contains>
+        </assertions>
+      </test-case>
+      <service-to-test>
+        <source class="default-config-file-source">
+          <file>file:///${service.tester.working.directory}/src/main/interlok/config/adapter.xml</file>
+        </source>
+        <preprocessors>
+          <service-unique-id-preprocessor>
+            <service>validate-json</service>
+          </service-unique-id-preprocessor>
+        </preprocessors>
+      </service-to-test>
+    </test>
+  </test-list>
+</service-test>

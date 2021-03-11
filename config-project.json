@@ -1,0 +1,25 @@
+{
+  "name" : "cassandra",
+  "variableSets" : {
+    "default" : { }
+  },
+  "variableXpaths" : {
+    "/adapter/shared-components/connections/cassandra-connection[unique-id=\"cassandra-connection\"]/connection-url" : "${host}",
+    "/adapter/shared-components/connections/cassandra-connection[unique-id=\"cassandra-connection\"]/keyspace" : "${keyspace}",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/consumer/path" : "${apiPath}/*",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[1]/condition/url-pattern" : "${cassandraPath}/openapi.yml$",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[2]/condition/url-pattern" : "${cassandraPath}$",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[3]/condition/url-pattern" : "${cassandraPath}/(.+)$",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[4]/condition/url-pattern" : "${cassandraPath}$",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[5]/condition/url-pattern" : "${cassandraPath}/(.+)$",
+    "/adapter/channel-list/channel[unique-id=\"cassandra-api\"]/workflow-list/standard-workflow[unique-id=\"cassandra-api\"]/service-collection/services/branching-service-collection[unique-id=\"HTTP Router\"]/services/jetty-routing-service[unique-id=\"Route\"]/route[6]/condition/url-pattern" : "${cassandraPath}$"
+  },
+  "uidInXincludeCompntListFileName" : false,
+  "xincludeXpaths" : { },
+  "additionalFiles" : {
+    "log4j2.xml" : "log4j2.xml",
+    "bootstrap.properties" : "bootstrap.properties"
+  },
+  "optionalComponentsInUse" : [ "com.adaptris:interlok-cassandra:4.0-SNAPSHOT", "com.adaptris:interlok-json:4.0-SNAPSHOT" ],
+  "structured" : true
+}
