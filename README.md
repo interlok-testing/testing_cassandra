@@ -4,7 +4,7 @@ Project tests interlok-cassandra, interlok-varsub, interlok-json features
 
 ## What it does
 
-This project has a single workflow that implements a simple rest api to manage (CRUD) data in mongodb.
+This project has a single workflow that implements a simple rest api to manage (CRUD) data in cassandra.
 
 ```mermaid
 graph LR
