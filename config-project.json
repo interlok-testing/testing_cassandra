@@ -20,6 +20,6 @@
     "log4j2.xml" : "log4j2.xml",
     "bootstrap.properties" : "bootstrap.properties"
   },
-  "optionalComponentsInUse" : [ "com.adaptris:interlok-cassandra:4.0-SNAPSHOT", "com.adaptris:interlok-json:4.0-SNAPSHOT" ],
+  "optionalComponentsInUse" : [ "com.adaptris:interlok-cassandra:5.0-SNAPSHOT", "com.adaptris:interlok-json:5.0-SNAPSHOT" ],
   "structured" : true
 }
