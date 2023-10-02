@@ -91,7 +91,6 @@
           <producer class="null-message-producer">
             <unique-id>sleepy-fermi</unique-id>
           </producer>
-          <produce-exception-handler class="null-produce-exception-handler"/>
           <unique-id>init-cassandra</unique-id>
           <message-metrics-interceptor>
             <unique-id>insert-into-cassandra-MessageMetrics</unique-id>
@@ -491,7 +490,6 @@
           <producer class="null-message-producer">
             <unique-id>thirsty-ramanujan</unique-id>
           </producer>
-          <produce-exception-handler class="null-produce-exception-handler"/>
           <unique-id>cassandra-api</unique-id>
           <message-metrics-interceptor>
             <unique-id>cassandra-api-MessageMetrics</unique-id>
