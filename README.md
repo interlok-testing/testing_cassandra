@@ -13,6 +13,7 @@ This project has a single workflow that implements a simple rest api to manage (
 ```mermaid
 graph LR
   subgraph Cassandra DB API
+    direction LR
     J_C(Jetty Consumer) --> JR(Jetty Router)
     JR --> O[Open API]
     O --> R[Response]
