@@ -38,7 +38,6 @@ graph LR
   style G fill:#F89347
   style L fill:#F89347
   style R fill:#F89347
-
 ```
 
 
@@ -95,8 +94,8 @@ You can call the api with the following curl commands:
 
 ### Add an entry
 
-`curl --location --request POST 'http://localhost:8080/api/cassandra' \
---header 'Content-Type: text/plain' \
+`curl --location --request POST 'http://localhost:8080/api/cassandra'
+--header 'Content-Type: text/plain'
 --data-raw '{
     "username":"username",
     "firstName":"firstName",
@@ -106,8 +105,8 @@ You can call the api with the following curl commands:
 
 ### Update an entry
 
-`curl --location --request PUT 'http://localhost:8080/api/cassandra' \
---header 'Content-Type: text/plain' \
+`curl --location --request PUT 'http://localhost:8080/api/cassandra'
+--header 'Content-Type: text/plain'
 --data-raw '{
     "username":"username",
     "firstName":"firstName",
