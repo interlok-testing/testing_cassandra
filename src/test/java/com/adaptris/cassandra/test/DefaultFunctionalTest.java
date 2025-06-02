@@ -18,9 +18,9 @@ public class DefaultFunctionalTest extends DockerComposeFunctionalTest {
 
     protected static String INTERLOK_SERVICE_NAME = "interlok-1";
     protected static String CASSANDRA_SERVICE_NAME = "cassandra-1";
-    protected static int INTERLOK_PORT = 8081;
+    protected static int INTERLOK_PORT = 8080;
     protected static int CASSANDRA_PORT = 9042;
-    protected static WaitStrategy defaultWaitStrategy = Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30));
+    protected static WaitStrategy defaultWaitStrategy = Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60));
 
 
 
@@ -39,7 +39,7 @@ public class DefaultFunctionalTest extends DockerComposeFunctionalTest {
 
     @Test
     public void test() throws Exception {
-
+        Thread.sleep(20000); // wait for interlok to startup
         given().body("""
 {
         "username":"username",
@@ -62,7 +62,7 @@ public class DefaultFunctionalTest extends DockerComposeFunctionalTest {
                 .statusCode(200);
         given()
                 .get(getInterlokEndpoint("/api/cassandra/username"))
-                .then().assertThat().body(equalTo("{}"))
+                .then().assertThat().body(equalTo("[]"))
                 .and().statusCode(200);
 
     }

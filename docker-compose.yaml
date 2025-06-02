@@ -33,6 +33,6 @@ services:
       start_period: 30s
       timeout: 10s
 
-networks:
-  network-1:
-    driver: bridge
+#networks:
+#  network-1:
+#    driver: bridge
