@@ -28,7 +28,7 @@ public class DefaultFunctionalTest extends DockerComposeFunctionalTest {
     protected ComposeContainer setupContainers() throws Exception {
         return new ComposeContainer(new File("docker-compose.yaml"))
                 .withExposedService(INTERLOK_SERVICE_NAME, INTERLOK_PORT, defaultWaitStrategy)
-                .withExposedService(CASSANDRA_SERVICE_NAME, CASSANDRA_PORT);
+                .withExposedService(CASSANDRA_SERVICE_NAME, CASSANDRA_PORT, defaultWaitStrategy);
     }
 
     protected String getInterlokEndpoint(String path) {
