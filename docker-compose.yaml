@@ -1,0 +1,38 @@
+services:
+  interlok:
+    hostname: interlok-1
+#    container_name: interlok-1
+#    networks:
+#      - network-1
+    build:
+      context: .
+      dockerfile: dockerfile-interlok
+    environment:
+      JAVA_OPTS:
+    depends_on:
+      cassandra:
+        condition: service_healthy
+
+  cassandra:
+    image: cassandra:3.11.19
+#    ports:
+#      - 9042:9042
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: cassandra-1
+#    container_name: cassandra-1
+#    networks:
+#      - network-1
+    environment:
+      - CASSANDRA_KEYSPACE=accounts
+    healthcheck:
+      test: bash -c "ss -an | grep -c 9042"
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+#networks:
+#  network-1:
+#    driver: bridge
