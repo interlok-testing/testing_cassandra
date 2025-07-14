@@ -20,7 +20,7 @@ public class DefaultFunctionalTest extends DockerComposeFunctionalTest {
     protected static String CASSANDRA_SERVICE_NAME = "cassandra-1";
     protected static int INTERLOK_PORT = 8080;
     protected static int CASSANDRA_PORT = 9042;
-    protected static WaitStrategy defaultWaitStrategy = Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(60));
+    protected static WaitStrategy defaultWaitStrategy = Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(90));
 
 
 
