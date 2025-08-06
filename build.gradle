@@ -6,7 +6,6 @@ plugins {
 ext {
   testingCommonGradle = "https://raw.githubusercontent.com/interlok-testing/testing_common/refs/heads/master/common.gradle?timestamp=${new Date().getTime()}"
 //  testingCommonGradle = "../testing_common/common.gradle"
-  interlokTestingVersion = "0.1"
   restAssuredVersion = "5.5.0"
   includeWar='true'
 }
@@ -24,9 +23,7 @@ dependencies {
   
   interlokJavadocs group: "com.adaptris", name: "interlok-cassandra", version: "$interlokVersion", classifier: "javadoc", changing: true, transitive: false
   interlokJavadocs group: "com.adaptris", name: "interlok-json", version: "$interlokVersion", classifier: "javadoc", changing: true, transitive: false
-  
-  interlokTestRuntime ("com.adaptris:interlok-service-tester:$interlokVersion") { changing=true }
-  testImplementation group: "com.adaptris", name: "interlok-testing-common", version: "$interlokTestingVersion"
+
   testImplementation "io.rest-assured:rest-assured:$restAssuredVersion"
   testImplementation "io.rest-assured:json-path:$restAssuredVersion"
 
